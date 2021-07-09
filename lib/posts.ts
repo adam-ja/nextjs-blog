@@ -6,6 +6,11 @@ import html from 'remark-html';
 
 const postsDirectory = path.join(process.cwd(), 'posts');
 
+type PostMetadata = {
+    date: string
+    title: string
+};
+
 export function getAllPostIds() {
     const fileNames = fs.readdirSync(postsDirectory);
 
@@ -31,7 +36,7 @@ export function getAllPostIds() {
     });
 };
 
-export function parsePostFile(id) {
+export function parsePostFile(id: string) {
     const fullPath = path.join(postsDirectory, `${id}.md`);
     const fileContents = fs.readFileSync(fullPath, 'utf8');
 
@@ -39,7 +44,7 @@ export function parsePostFile(id) {
     return matter(fileContents);
 }
 
-export async function getPostData(id) {
+export async function getPostData(id: string) {
     const matterResult = parsePostFile(id);
     const processedContent = await remark()
         .use(html)
@@ -49,7 +54,7 @@ export async function getPostData(id) {
     return {
         id,
         contentHtml: processedContent.toString(),
-        ...matterResult.data
+        ...(matterResult.data as PostMetadata)
     };
 }
 
@@ -63,11 +68,11 @@ export function getSortedPostsData() {
         // Combine the data with the id
         return {
             id,
-            ...parsePostFile(id).data
+            ...(parsePostFile(id).data as PostMetadata)
         };
     });
     // Sort posts by date
-    return allPostsData.sort(({ date: a }, { date: b }) => {
+    return allPostsData.sort(({ date: a }, { date: b }): number => {
         if (a < b) {
             return 1
         } else if (a > b) {
